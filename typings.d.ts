@@ -26,3 +26,11 @@ export interface StoryProps {
     img: string;
     username: string;
 }
+
+export interface PostProps {
+    id: string;
+    username: string;
+    userImg: string;
+    img: string;
+    caption: string
+}
