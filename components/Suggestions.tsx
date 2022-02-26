@@ -12,7 +12,6 @@ const Suggestions = () => {
     }));
 
     setSuggestions(suggestions);
-    console.log(suggestions);
   }, []);
 
   return (

@@ -36,3 +36,15 @@ export interface PostProps {
   img: string;
   caption: string;
 }
+
+export interface ProviderProps {
+  providers: {
+    google: {
+      callbackUrl: string;
+      id: string;
+      name: string;
+      signinUrl: string;
+      type: string;
+    };
+  };
+}
