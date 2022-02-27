@@ -1,24 +1,34 @@
 import React from 'react';
-import {
-  ClientSafeProvider,
-  getProviders,
-  LiteralUnion,
-  signIn,
-} from 'next-auth/react';
-import { BuiltInProviderType } from 'next-auth/providers';
+import { getProviders, signIn } from 'next-auth/react';
 import { ProviderProps } from '../../typings';
+import Header from '../../components/Header';
 
 const SignIn = ({ providers }: ProviderProps) => {
   console.log(providers);
   return (
     <>
-      {Object.values(providers).map(provider => (
-        <div key={provider.name}>
-          <button onClick={() => signIn(provider.id)}>
-            Sign in with {provider.name}
-          </button>
+      <Header />
+
+      <div className="-mt-20 flex min-h-screen flex-col items-center justify-center py-2 px-14 text-center">
+        <img className="w-80" src="https://links.papareact.com/ocw" alt="" />
+
+        <p className="font-xs italic">
+          This is not a real app, only for demo purposes
+        </p>
+
+        <div className="mt-40">
+          {Object.values(providers).map(provider => (
+            <div key={provider.name}>
+              <button
+                className="rounded-lg bg-blue-500 p-3 text-white"
+                onClick={() => signIn(provider.id, { callbackUrl: '/' })}
+              >
+                Sign in with {provider.name}
+              </button>
+            </div>
+          ))}
         </div>
-      ))}
+      </div>
     </>
   );
 };

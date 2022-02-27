@@ -1,11 +1,6 @@
 import NextAuth from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 
-interface GoogleProviderInt {
-  clientId: string | undefined;
-  clientSecret: string | undefined;
-}
-
 export default NextAuth({
   // Configure one or more authentication providers
   providers: [
@@ -17,5 +12,19 @@ export default NextAuth({
   ],
   pages: {
     signIn: '/auth/signin',
+  },
+  callbacks: {
+    async session({ session, token, user }) {
+      // @ts-ignore
+      session.user.username = session.user
+        .name!.split(' ')
+        .join('')
+        .toLowerCase();
+
+      //@ts-ignore
+      session.user.uid = token.sub;
+
+      return session;
+    },
   },
 });
