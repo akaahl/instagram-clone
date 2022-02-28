@@ -3,29 +3,72 @@ import { useRecoilState } from 'recoil';
 import { modalState } from '../atoms/modalAtom';
 import { Dialog, Transition } from '@headlessui/react';
 import { CameraIcon } from '@heroicons/react/outline';
+import {
+  addDoc,
+  collection,
+  doc,
+  serverTimestamp,
+  updateDoc,
+} from 'firebase/firestore';
+import { db, storage } from '../firebase';
+import { useSession } from 'next-auth/react';
+import { ref, getDownloadURL, uploadString } from 'firebase/storage';
 
 const Modal = () => {
+  const { data: session } = useSession();
   const [open, setOpen] = useRecoilState(modalState);
   const filePickerRef = useRef<HTMLInputElement | null>(null);
   const captionRef = useRef<HTMLInputElement | null>(null);
   const [loading, setLoading] = useState(false);
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFile, setSelectedFile] = useState('');
 
   const uploadPost = async () => {
     if (loading) return;
 
     setLoading(true);
+
+    // 1) Create a store and add post to 'firestore' collection
+    // 2) Get the ID for the newly created post
+    // 3) Upload the image to the firebase storage with the post ID
+    // 4) Get a download URL from the fb storage and update the original post with image
+
+    const docRef = await addDoc(collection(db, 'posts'), {
+      username: session?.user?.username,
+      caption: captionRef.current?.value,
+      profileImg: session?.user?.image,
+      timestamp: serverTimestamp(),
+    });
+
+    console.log('New doc uploaded with Id', docRef.id);
+
+    const imageRef = ref(storage, `posts/${docRef.id}/image`);
+
+    await uploadString(imageRef, selectedFile, 'data_url').then(
+      async snapshot => {
+        const downloadUrl = await getDownloadURL(imageRef);
+
+        await updateDoc(doc(db, 'posts', docRef.id), {
+          image: downloadUrl,
+        });
+      }
+    );
+
+    setOpen(false);
+    setLoading(false);
+    setSelectedFile('');
   };
 
   const addImageToPost = (e: React.ChangeEvent<HTMLInputElement>) => {
     console.log(e);
     const reader = new FileReader();
 
+    // @ts-ignore
     if (e?.target?.files[0]) {
       reader.readAsDataURL(e.target.files[0]);
     }
 
     reader.onload = readerEvent => {
+      // @ts-ignore
       setSelectedFile(readerEvent.target?.result);
     };
   };
@@ -80,7 +123,7 @@ const Modal = () => {
                     src={selectedFile}
                     className="w-full cursor-pointer object-contain"
                     alt="selected file image"
-                    onClick={() => setSelectedFile(null)}
+                    onClick={() => setSelectedFile('')}
                   />
                 ) : (
                   <div
@@ -127,12 +170,14 @@ const Modal = () => {
                 <div className="mt-5 sm:mt-6">
                   <button
                     type="button"
+                    disabled={!selectedFile.length}
+                    onClick={uploadPost}
                     className="inline-flex w-full justify-center rounded-md border border-transparent bg-red-500
                   px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2
                   focus:ring-red-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:bg-gray-300 
                   hover:disabled:bg-gray-300 sm:text-sm"
                   >
-                    Upload Post
+                    {loading ? 'Uploading...' : 'Upload Post'}
                   </button>
                 </div>
               </div>
