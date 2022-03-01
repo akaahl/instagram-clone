@@ -25,13 +25,9 @@ const Posts = () => {
     [db]
   );
 
-  // console.log(posts);
-
   return (
     <div>
       {posts.map(post => {
-        console.log(post.data());
-
         return (
           <Post
             key={post.id}
