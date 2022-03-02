@@ -1,5 +1,6 @@
 import NextAuth from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
+import { User } from '../../../typings';
 
 export default NextAuth({
   // Configure one or more authentication providers
@@ -15,16 +16,26 @@ export default NextAuth({
   },
   callbacks: {
     async session({ session, token, user }) {
+      const userSession: User | undefined = session?.user;
+
+      if (userSession) {
+        userSession.username = user.name!.split(' ').join('').toLowerCase();
+        userSession.uid = token.sub;
+        session.user = userSession;
+        return session;
+      }
+      return session;
+
       // @ts-ignore
-      session.user.username = session.user
-        .name!.split(' ')
-        .join('')
-        .toLowerCase();
+      // session.user.username = session.user
+      //   .name!.split(' ')
+      //   .join('')
+      //   .toLowerCase();
 
       //@ts-ignore
-      session.user.uid = token.sub;
+      // session.user.uid = token.sub;
 
-      return session;
+      // return session;
     },
   },
 });
