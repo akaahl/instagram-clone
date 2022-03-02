@@ -13,9 +13,11 @@ import {
 import { db, storage } from '../firebase';
 import { useSession } from 'next-auth/react';
 import { ref, getDownloadURL, uploadString } from 'firebase/storage';
+import { User } from '../typings';
 
 const Modal = () => {
   const { data: session } = useSession();
+  const user: User | undefined = session?.user;
   const [open, setOpen] = useRecoilState(modalState);
   const filePickerRef = useRef<HTMLInputElement | null>(null);
   const captionRef = useRef<HTMLInputElement | null>(null);
@@ -33,10 +35,9 @@ const Modal = () => {
     // 4) Get a download URL from the fb storage and update the original post with image
 
     const docRef = await addDoc(collection(db, 'posts'), {
-      //@ts-ignore
-      username: session?.user?.username,
+      username: user?.username,
       caption: captionRef.current?.value,
-      profileImg: session?.user?.image,
+      profileImg: user?.image,
       timestamp: serverTimestamp(),
     });
 

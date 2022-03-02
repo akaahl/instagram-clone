@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { PostProps } from '../typings';
+import { PostProps, User } from '../typings';
 import {
   BookmarkIcon,
   ChatIcon,
@@ -29,6 +29,7 @@ import Moment from 'react-moment';
 
 const Post = ({ id, username, userImg, img, caption }: PostProps) => {
   const { data: session } = useSession();
+  const user: User | undefined = session?.user;
   const [comment, setComment] = useState('');
   const [comments, setComments] = useState<
     QueryDocumentSnapshot<DocumentData>[]
@@ -57,15 +58,15 @@ const Post = ({ id, username, userImg, img, caption }: PostProps) => {
   );
 
   useEffect(() => {
-    setHasLiked(likes.findIndex(like => like.id === session?.user?.uid) !== -1);
+    setHasLiked(likes.findIndex(like => like.id === user?.uid) !== -1);
   }, [likes]);
 
   const likePost = async () => {
     if (hasLiked) {
-      await deleteDoc(doc(db, 'posts', id, 'likes', session?.user?.uid!));
+      await deleteDoc(doc(db, 'posts', id, 'likes', user?.uid!));
     } else {
-      await setDoc(doc(db, 'posts', id, 'likes', session?.user?.uid!), {
-        username: session?.user?.username,
+      await setDoc(doc(db, 'posts', id, 'likes', user?.uid!), {
+        username: user?.username,
       });
     }
   };
@@ -78,8 +79,8 @@ const Post = ({ id, username, userImg, img, caption }: PostProps) => {
 
     await addDoc(collection(db, 'posts', id, 'comments'), {
       comment: commentToSend,
-      username: session?.user?.username,
-      userImage: session?.user?.image,
+      username: user?.username,
+      userImage: user?.image,
       timestamp: serverTimestamp(),
     });
   };
