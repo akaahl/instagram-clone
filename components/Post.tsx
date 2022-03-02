@@ -14,12 +14,16 @@ import { db } from '../firebase';
 import {
   addDoc,
   collection,
+  deleteDoc,
+  doc,
   DocumentData,
   onSnapshot,
   orderBy,
   query,
   QueryDocumentSnapshot,
+  QuerySnapshot,
   serverTimestamp,
+  setDoc,
 } from 'firebase/firestore';
 import Moment from 'react-moment';
 
@@ -29,6 +33,8 @@ const Post = ({ id, username, userImg, img, caption }: PostProps) => {
   const [comments, setComments] = useState<
     QueryDocumentSnapshot<DocumentData>[]
   >([]);
+  const [likes, setLikes] = useState<QueryDocumentSnapshot<DocumentData>[]>([]);
+  const [hasLiked, setHasLiked] = useState(false);
 
   useEffect(
     () =>
@@ -39,8 +45,30 @@ const Post = ({ id, username, userImg, img, caption }: PostProps) => {
         ),
         snapshot => setComments(snapshot.docs)
       ),
-    [db]
+    [db, id]
   );
+
+  useEffect(
+    () =>
+      onSnapshot(collection(db, 'posts', id, 'likes'), snapshot =>
+        setLikes(snapshot.docs)
+      ),
+    [db, id]
+  );
+
+  useEffect(() => {
+    setHasLiked(likes.findIndex(like => like.id === session?.user?.uid) !== -1);
+  }, [likes]);
+
+  const likePost = async () => {
+    if (hasLiked) {
+      await deleteDoc(doc(db, 'posts', id, 'likes', session?.user?.uid!));
+    } else {
+      await setDoc(doc(db, 'posts', id, 'likes', session?.user?.uid!), {
+        username: session?.user?.username,
+      });
+    }
+  };
 
   const sendComment = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -73,7 +101,14 @@ const Post = ({ id, username, userImg, img, caption }: PostProps) => {
       {session && (
         <div className="flex justify-between px-4 pt-4">
           <div className="flex space-x-4">
-            <HeartIcon className="btn" />
+            {hasLiked ? (
+              <HeartIconFilled
+                className="btn text-red-500"
+                onClick={likePost}
+              />
+            ) : (
+              <HeartIcon className="btn" onClick={likePost} />
+            )}
             <ChatIcon className="btn" />
             <PaperAirplaneIcon className="btn" />
           </div>
@@ -83,6 +118,9 @@ const Post = ({ id, username, userImg, img, caption }: PostProps) => {
       )}
 
       <p className="truncate p-5">
+        {likes.length > 0 && (
+          <p className="mb-1 font-bold">{likes.length} likes</p>
+        )}
         <span className="mr-1 font-bold">{username}</span>
         {caption}
       </p>

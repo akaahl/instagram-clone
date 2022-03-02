@@ -4,7 +4,6 @@ import { ProviderProps } from '../../typings';
 import Header from '../../components/Header';
 
 const SignIn = ({ providers }: ProviderProps) => {
-  console.log(providers);
   return (
     <>
       <Header />

@@ -39,7 +39,6 @@ const Modal = () => {
       timestamp: serverTimestamp(),
     });
 
-    console.log('New doc uploaded with Id', docRef.id);
 
     const imageRef = ref(storage, `posts/${docRef.id}/image`);
 
@@ -59,7 +58,6 @@ const Modal = () => {
   };
 
   const addImageToPost = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(e);
     const reader = new FileReader();
 
     // @ts-ignore
