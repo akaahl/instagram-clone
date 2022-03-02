@@ -48,3 +48,11 @@ export interface ProviderProps {
     };
   };
 }
+
+export interface User {
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+  uid?: string | null;
+  username?: string | null;
+}

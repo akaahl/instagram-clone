@@ -39,7 +39,6 @@ const Modal = () => {
       timestamp: serverTimestamp(),
     });
 
-
     const imageRef = ref(storage, `posts/${docRef.id}/image`);
 
     await uploadString(imageRef, selectedFile, 'data_url').then(
