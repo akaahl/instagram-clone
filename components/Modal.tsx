@@ -33,11 +33,14 @@ const Modal = () => {
     // 4) Get a download URL from the fb storage and update the original post with image
 
     const docRef = await addDoc(collection(db, 'posts'), {
+      //@ts-ignore
       username: session?.user?.username,
       caption: captionRef.current?.value,
       profileImg: session?.user?.image,
       timestamp: serverTimestamp(),
     });
+
+    console.log(docRef);
 
     const imageRef = ref(storage, `posts/${docRef.id}/image`);
 
